@@ -1,0 +1,42 @@
+# Bytecode and compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Editor
+.vscode/
+*.code-workspace
+
+# Poetry virtualenv (in-project)
+.venv/
+
+# Distribution and packaging
+dist/
+build/
+*.egg-info/
+
+# Tests and coverage
+.coverage
+.cache/
+pytest_cache/
+htmlcov/
+.tox/
+.nox/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs and dumps
+*.log
+*.bak
+*.tmp
+
+# Secrets (never commit these)
+.env
+.env.*
