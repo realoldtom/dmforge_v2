@@ -1,10 +1,7 @@
 from typing import Protocol
 
-from ..domain.models import Deck, DeckOptions, SpellCard
-
-
-class SpellRepository(Protocol):
-    def load_all_spells(self) -> list[dict]: ...
+from dmforge.application.ports.spell_repository import SpellRepository
+from dmforge.domain.models import Deck, DeckOptions, SpellCard
 
 
 class DeckBuilder(Protocol):
