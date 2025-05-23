@@ -54,18 +54,15 @@ class DeckBuilder(Protocol):
     def build(self, options: DeckOptions) -> Deck:
         ...
 RenderService
-python
-Copy
-Edit
+
 class RenderService(Protocol):
     def render_pdf(self, deck: Deck, output_path: Path) -> None:
         ...
     def render_html(self, deck: Deck, output_path: Path) -> None:
         ...
 ArtService
-python
-Copy
-Edit
+
+
 class ArtService(Protocol):
     def generate_prompt(self, card: SpellCard) -> str:
         ...
@@ -73,16 +70,12 @@ class ArtService(Protocol):
         ...
 💾 Repository Contracts
 SpellRepository
-python
-Copy
-Edit
+p
 class SpellRepository(Protocol):
     def load_all_spells(self) -> list[dict]:
         ...
 DeckStorage
-python
-Copy
-Edit
+
 class DeckStorage(Protocol):
     def save(self, deck: Deck, path: Path) -> None:
         ...
@@ -90,9 +83,7 @@ class DeckStorage(Protocol):
         ...
 🎯 Adapter Contract (CLI ↔ App Layer)
 DeckController
-python
-Copy
-Edit
+
 class DeckController:
     def __init__(self, builder: DeckBuilder)
     def build_from_cli(self, options_dict: dict) -> Deck

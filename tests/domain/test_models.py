@@ -1,4 +1,4 @@
-from src.dmforge.domain.models import Deck, DeckOptions, SpellCard
+from dmforge.domain.models import Deck, DeckOptions, SpellCard
 
 
 def test_spell_card_creation():
