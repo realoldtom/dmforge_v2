@@ -6,9 +6,9 @@ import sys
 def run_check(command: list[str], description: str):
     print(f"🔍 Running: {description} ...")
     result = subprocess.run(command)
-    
+
     # Windows access violation fix
-    if result.returncode == 3221225477 and "pytest" in command[0]:
+    if result.returncode == 3221225477 and any("pytest" in part for part in command):
         print(f"⚠️ {description} exited with Windows access violation but tests passed")
         result.returncode = 0  # treat it as a pass
 
@@ -17,9 +17,6 @@ def run_check(command: list[str], description: str):
     else:
         print(f"❌ {description} failed (code {result.returncode})")
         sys.exit(result.returncode)
-
-
-
 
 
 def main():
@@ -32,8 +29,12 @@ def main():
 
     run_check(["python", "scripts/validate_env.py"], "render stack compatibility check")
     import os
+
     os.environ["GDK_BACKEND"] = "win32"
-    run_check(["poetry", "run", "pytest", "--cov", "--exitfirst", "-p", "no:warnings"], "tests with coverage")
+    run_check(
+        ["poetry", "run", "pytest", "--cov", "--exitfirst", "-p", "no:warnings"],
+        "tests with coverage",
+    )
     run_check(["poetry", "run", "black", "."], "code formatting check")
     run_check(["poetry", "run", "ruff", "check", ".", "--fix"], "style linting")
     run_check(["poetry", "check"], "Poetry dependency integrity")

@@ -1,6 +1,9 @@
+import sys
+
+
 def check_render_stack():
-    import weasyprint
     import pydyf
+    import weasyprint
     from packaging.version import parse as vparse
 
     if vparse(weasyprint.__version__) >= vparse("61.0"):

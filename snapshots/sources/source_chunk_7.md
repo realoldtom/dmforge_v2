@@ -1,13 +1,12 @@
+# File: tests/interface/cli/test_deck_render.py
+```python
 import json
-import shutil
-from pathlib import Path
-
 import pytest
-from dmforge.interface.cli.deck_render import app
+from pathlib import Path
 from typer.testing import CliRunner
+from dmforge.interface.cli.deck_render import app
 
 runner = CliRunner()
-
 
 def copy_template_to(tmp_template_dir: Path):
     real_template = Path("src/dmforge/resources/templates/deck.html.j2")
@@ -29,7 +28,7 @@ def create_test_deck_file(path: Path, custom_data=None):
                 "classes": ["Wizard"],
                 "description": "Shoots darts of magical force.",
                 "duration": "Instantaneous",
-                "art_path": None,
+                "art_path": None
             },
             {
                 "name": "Fireball",
@@ -38,9 +37,9 @@ def create_test_deck_file(path: Path, custom_data=None):
                 "classes": ["Wizard", "Sorcerer"],
                 "description": "A bright streak flashes from your pointing finger to a point you choose.",
                 "duration": "Instantaneous",
-                "art_path": "fireball.png",
-            },
-        ],
+                "art_path": "fireball.png"
+            }
+        ]
     }
     path.write_text(json.dumps(deck_data, indent=2), encoding="utf-8")
 
@@ -49,7 +48,7 @@ def create_test_template(template_dir: Path):
     """Create a minimal test template."""
     template_dir.mkdir(parents=True, exist_ok=True)
     template_file = template_dir / "deck.html.j2"
-
+    
     template_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,13 +87,13 @@ def create_test_template(template_dir: Path):
     </div>
 </body>
 </html>"""
-
+    
     template_file.write_text(template_content, encoding="utf-8")
     return template_file
 
 
 class TestCLI:
-
+    
     def test_render_html_output(self, tmp_path):
         """Test HTML rendering with custom template."""
         # Arrange
@@ -102,28 +101,20 @@ class TestCLI:
         output_path = tmp_path / "output.html"
         template_dir = tmp_path / "templates"
         asset_dir = tmp_path / "assets"
-
+        
         create_test_deck_file(input_path)
         create_test_template(template_dir)
         asset_dir.mkdir(exist_ok=True)
 
         # Act
-        result = runner.invoke(
-            app,
-            [
-                "render",
-                "--input",
-                str(input_path),
-                "--output",
-                str(output_path),
-                "--format",
-                "html",
-                "--template-dir",
-                str(template_dir),
-                "--asset-dir",
-                str(asset_dir),
-            ],
-        )
+        result = runner.invoke(app, [
+            "render",
+            "--input", str(input_path),
+            "--output", str(output_path),
+            "--format", "html",
+            "--template-dir", str(template_dir),
+            "--asset-dir", str(asset_dir)
+        ])
 
         # Debug output
         if result.stdout:
@@ -133,10 +124,7 @@ class TestCLI:
         if result.exception:
             print("Exception:", result.exception)
             import traceback
-
-            traceback.print_exception(
-                type(result.exception), result.exception, result.exception.__traceback__
-            )
+            traceback.print_exception(type(result.exception), result.exception, result.exception.__traceback__)
 
         # Assert
         assert result.exit_code == 0, f"Command failed with exit code {result.exit_code}"
@@ -155,29 +143,21 @@ class TestCLI:
         output_path = tmp_path / "output.pdf"
         template_dir = tmp_path / "templates"
         asset_dir = tmp_path / "assets"
-
+        
         create_test_deck_file(input_path)
         create_test_template(template_dir)
         asset_dir.mkdir(exist_ok=True)
 
         # Act
-        result = runner.invoke(
-            app,
-            [
-                "render",
-                "--input",
-                str(input_path),
-                "--output",
-                str(output_path),
-                "--format",
-                "pdf",
-                "--template-dir",
-                str(template_dir),
-                "--asset-dir",
-                str(asset_dir),
-                "--verbose",
-            ],
-        )
+        result = runner.invoke(app, [
+            "render",
+            "--input", str(input_path),
+            "--output", str(output_path),
+            "--format", "pdf",
+            "--template-dir", str(template_dir),
+            "--asset-dir", str(asset_dir),
+            "--verbose"
+        ])
 
         # Debug output
         print("STDOUT:\n", result.stdout)
@@ -190,6 +170,7 @@ class TestCLI:
             print("STDERR:", result.stderr)
             print("EXCEPTION:", result.exception)
             pytest.fail(f"PDF render command failed: {result.exception}")
+
 
         # Assert
         assert result.exit_code == 0, f"Command failed with exit code {result.exit_code}"
@@ -207,7 +188,10 @@ class TestCLI:
         create_test_deck_file(input_path)
 
         # Act
-        result = runner.invoke(app, ["validate", "--input", str(input_path)])
+        result = runner.invoke(app, [
+            "validate",
+            "--input", str(input_path)
+        ])
 
         # Debug output
         if result.stdout:
@@ -226,9 +210,11 @@ class TestCLI:
         output_path = tmp_path / "output.html"
 
         # Act
-        result = runner.invoke(
-            app, ["render", "--input", str(input_path), "--output", str(output_path)]
-        )
+        result = runner.invoke(app, [
+            "render",
+            "--input", str(input_path),
+            "--output", str(output_path)
+        ])
 
         # Debug output - check both stdout and stderr
         print("STDOUT:", repr(result.stdout))
@@ -252,22 +238,14 @@ class TestCLI:
         create_test_template(template_dir)
         asset_dir.mkdir(exist_ok=True)
 
-        result = runner.invoke(
-            app,
-            [
-                "render",
-                "--input",
-                str(input_path),
-                "--output",
-                str(output_path),
-                "--format",
-                "xyz",
-                "--template-dir",
-                str(template_dir),
-                "--asset-dir",
-                str(asset_dir),
-            ],
-        )
+        result = runner.invoke(app, [
+            "render",
+            "--input", str(input_path),
+            "--output", str(output_path),
+            "--format", "xyz",
+            "--template-dir", str(template_dir),
+            "--asset-dir", str(asset_dir),
+        ])
 
         print("STDOUT:", repr(result.stdout))
         print("STDERR:", repr(result.stderr))
@@ -277,28 +255,23 @@ class TestCLI:
         error_text = result.stdout + result.stderr + (result.output or "")
         assert "Unsupported format" in error_text or "format" in error_text.lower()
 
+
     def test_missing_template_directory(self, tmp_path):
         """Test behavior when template directory doesn't exist."""
         # Arrange
         input_path = tmp_path / "deck.json"
         output_path = tmp_path / "output.html"
         template_dir = tmp_path / "nonexistent_templates"
-
+        
         create_test_deck_file(input_path)
 
         # Act
-        result = runner.invoke(
-            app,
-            [
-                "render",
-                "--input",
-                str(input_path),
-                "--output",
-                str(output_path),
-                "--template-dir",
-                str(template_dir),
-            ],
-        )
+        result = runner.invoke(app, [
+            "render",
+            "--input", str(input_path),
+            "--output", str(output_path),
+            "--template-dir", str(template_dir)
+        ])
 
         # Debug output
         print("STDOUT:", repr(result.stdout))
@@ -317,29 +290,21 @@ class TestCLI:
         output_path = tmp_path / "output.html"
         template_dir = tmp_path / "templates"
         asset_dir = tmp_path / "assets"
-
+        
         create_test_deck_file(input_path)
         create_test_template(template_dir)
         asset_dir.mkdir(exist_ok=True)
 
         # Act
-        result = runner.invoke(
-            app,
-            [
-                "render",
-                "--input",
-                str(input_path),
-                "--output",
-                str(output_path),
-                "--format",
-                "html",
-                "--template-dir",
-                str(template_dir),
-                "--asset-dir",
-                str(asset_dir),
-                "--verbose",
-            ],
-        )
+        result = runner.invoke(app, [
+            "render",
+            "--input", str(input_path),
+            "--output", str(output_path),
+            "--format", "html",
+            "--template-dir", str(template_dir),
+            "--asset-dir", str(asset_dir),
+            "--verbose"
+        ])
 
         # Assert
         assert result.exit_code == 0
@@ -355,50 +320,46 @@ class TestCLI:
         output_path = tmp_path / "large_output.html"
         template_dir = tmp_path / "templates"
         asset_dir = tmp_path / "assets"
-
+        
         # Create a deck with many cards
-        large_deck_data = {"name": "Large Test Deck", "version": "v1", "cards": []}
-
+        large_deck_data = {
+            "name": "Large Test Deck",
+            "version": "v1",
+            "cards": []
+        }
+        
         # Generate 50 cards
         for i in range(50):
             card = {
                 "name": f"Test Spell {i+1}",
                 "level": (i % 9) + 1,
                 "school": ["Evocation", "Illusion", "Necromancy", "Abjuration"][i % 4],
-                "classes": ["Wizard", "Sorcerer", "Cleric"][: (i % 3) + 1],
+                "classes": ["Wizard", "Sorcerer", "Cleric"][:(i % 3) + 1],
                 "description": f"This is test spell number {i+1} with a longer description to test rendering performance.",
                 "duration": "1 minute" if i % 2 else "Instantaneous",
-                "art_path": f"spell_{i+1}.png" if i % 3 == 0 else None,
+                "art_path": f"spell_{i+1}.png" if i % 3 == 0 else None
             }
             large_deck_data["cards"].append(card)
-
+        
         create_test_deck_file(input_path, large_deck_data)
         create_test_template(template_dir)
         asset_dir.mkdir(exist_ok=True)
 
         # Act
-        result = runner.invoke(
-            app,
-            [
-                "render",
-                "--input",
-                str(input_path),
-                "--output",
-                str(output_path),
-                "--format",
-                "html",
-                "--template-dir",
-                str(template_dir),
-                "--asset-dir",
-                str(asset_dir),
-                "--verbose",
-            ],
-        )
+        result = runner.invoke(app, [
+            "render",
+            "--input", str(input_path),
+            "--output", str(output_path),
+            "--format", "html",
+            "--template-dir", str(template_dir),
+            "--asset-dir", str(asset_dir),
+            "--verbose"
+        ])
 
         # Assert
         assert result.exit_code == 0
         assert output_path.exists()
-
+        
         html_output = output_path.read_text(encoding="utf-8")
         assert "Test Spell 1" in html_output
         assert "Test Spell 50" in html_output
@@ -408,12 +369,15 @@ class TestCLI:
         """Test behavior with malformed JSON input."""
         # Arrange
         input_path = tmp_path / "malformed.json"
-
+        
         # Create malformed JSON
         input_path.write_text('{"name": "Test", "cards": [', encoding="utf-8")
 
         # Act
-        result = runner.invoke(app, ["validate", "--input", str(input_path)])
+        result = runner.invoke(app, [
+            "validate",
+            "--input", str(input_path)
+        ])
 
         # Debug output
         print("STDOUT:", repr(result.stdout))
@@ -428,22 +392,22 @@ class TestCLI:
     def test_pdf_dependency_check(self):
         """Test PDF dependency checking."""
         from dmforge.application.services.weasy_renderer import WeasyRenderer
-
+        
         status = WeasyRenderer.check_pdf_dependencies()
-
+        
         assert isinstance(status, dict)
-        assert "weasyprint_installed" in status
-        assert "pydyf_installed" in status
-        assert "recommendations" in status
-
+        assert 'weasyprint_installed' in status
+        assert 'pydyf_installed' in status
+        assert 'recommendations' in status
+        
         print("PDF Dependencies:", status)
 
 
 if __name__ == "__main__":
     # Allow running individual tests
     import sys
-
     if len(sys.argv) > 1:
         pytest.main([__file__ + "::" + sys.argv[1], "-v", "-s"])
     else:
         pytest.main([__file__, "-v", "-s"])
+```

@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
-from dmforge.domain.models import Deck, SpellCard
+
 from dmforge.application.ports.deck_storage import DeckStorage
-from dmforge.application.services.weasy_renderer import WeasyRenderer
+from dmforge.domain.models import Deck, SpellCard
+
 
 class JSONDeckStorage(DeckStorage):
     def save(self, deck: Deck, path: Path) -> None:
@@ -13,7 +14,5 @@ class JSONDeckStorage(DeckStorage):
         return Deck(
             name=data["name"],
             version=data["version"],
-            cards=[
-                SpellCard(**card) for card in data["cards"]
-            ]
+            cards=[SpellCard(**card) for card in data["cards"]],
         )

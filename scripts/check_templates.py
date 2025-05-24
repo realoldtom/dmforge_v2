@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from pathlib import Path
 import sys
+from pathlib import Path
 
 required_templates = ["deck.html.j2"]
 template_dir = Path("src/dmforge/resources/templates")

@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Optional
 
@@ -11,8 +12,10 @@ app = typer.Typer()
 
 @app.command()
 def build(
-    spell_data: Annotated[Path, typer.Option("--spell-data", help="Path to spell JSON")],
-    output: Annotated[Path, typer.Option("--output", help="Path to save deck JSON")],
+    spell_data: Annotated[Path, typer.Option("--spell-data", help="Path to spell JSON")] = Path(
+        "data/spells/spells.json"
+    ),
+    output: Annotated[Path, typer.Option("--output", help="Path to save deck JSON")] = None,
     name: Annotated[str, typer.Option("--name", help="Deck name")] = "Untitled Deck",
     classes: Annotated[
         Optional[list[str]], typer.Option("--class", "-c", help="Class filters")
@@ -27,6 +30,19 @@ def build(
     """
     Build a filtered deck of spells from input data.
     """
+    # Validate spell_data file exists
+    if not spell_data.exists():
+        typer.echo(f"❌ Spell data not found at: {spell_data}", err=True)
+        raise typer.Exit(1)
+
+    # Default output file if not provided
+    if output is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output = Path(f"exports/dev/deck_{timestamp}.json")
+
+    # Ensure output directory exists
+    output.parent.mkdir(parents=True, exist_ok=True)
+
     classes = classes or []
     levels = levels or []
     schools = schools or []

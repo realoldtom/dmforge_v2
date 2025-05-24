@@ -40,3 +40,10 @@ Thumbs.db
 # Secrets (never commit these)
 .env
 .env.*
+
+exports/*
+!exports/.gitkeep
+data/*
+!data/.gitkeep
+tmp/*
+!tmp/.gitkeep
