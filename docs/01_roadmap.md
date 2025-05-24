@@ -1,13 +1,14 @@
-# 🧭 DMForge v2 Roadmap
+# 🧭 DMForge v2 Roadmap (Enforced Architecture)
 
 ## 🔥 Core Principles
 
-- **Single Responsibility Principle (SRP)**: One reason to change per module  
-- **Separation of Concerns (SoC)**: CLI, app, domain, and infra are isolated  
-- **Dependency Injection (DI)**: All services and repos passed explicitly  
-- **Golden Tests**: All outputs (deck JSON, rendered HTML, etc.) are golden snapshot tested  
-- **CLI = Adapter**: No domain logic in the CLI layer  
-- **Strict Contracts**: Repositories, services, and transformers are interfaces  
+- **SRP (Single Responsibility)**: One reason to change per module  
+- **SoC (Separation of Concerns)**: CLI, app, domain, infra fully isolated  
+- **DI (Dependency Injection)**: All services and repos passed via Protocols  
+- **Golden Testing**: All outputs (deck JSON, HTML/PDF, art) are snapshot tested  
+- **CLI = Adapter**: CLI only parses input; no logic  
+- **Strict Contracts**: All services and repos declare Protocols in `application.ports`  
+- **Automated Enforcement**: Architecture validated before every commit  
 
 ---
 
@@ -15,68 +16,71 @@
 
 ```sh
 dmforge deck build --class Wizard --level 1 --output deck.json
-dmforge deck render deck.json --format pdf
+dmforge deck render deck.json --format pdf --layout 6up
 dmforge deck art deck.json
-```
+📚 Clean Architecture Layers
+Layer	Purpose
+domain/	Pure models: SpellCard, Deck
+application/	Orchestration via interfaces
+infrastructure/	File I/O, rendering, API clients
+interface/cli/	Typer adapter only
 
----
+📋 Phase Breakdown
+Phase	Goal	Outcome
+0	Project scaffold, CI, pre-commit	scripts/end_dev.py, .pre-commit-config.yaml
+1	Deck builder MVP	deck build with filtering and JSON output
+1.4	Environment-aware paths	data/, exports/, .venv/ auto-detected
+2	PDF/HTML Renderer	WeasyPrint support with golden testing
+2.1	PDF Compatibility Guard	Enforce weasyprint < 61.0, pydyf < 0.11.0
+2.5	6-Up Printable Layout (Grid + Breaks)	Card sheet layout for print
+3	Art Prompt + DALL·E Integration	Prompts, metadata, stable paths
+4	Interactive CLI Menu	deck build --interactive with filters
+X.0	Enforcement system	Full automation of snapshot, contracts, docs
+X.1	Documentation generator suite	Auto-generate CLI guide, data flow, troubleshooting
 
-## 📚 Clean Architecture Layers
+🧪 Test Strategy
+✅ Golden tests for rendered output and JSON
 
-- `domain/`: Core models (`SpellCard`, `Deck`, `DeckOptions`, etc.)
-- `application/`: Services like `DeckBuilder`, `RenderService`, etc.
-- `infrastructure/`: JSON repo, OpenAI API, WeasyPrint
-- `interface/cli/`: Typer CLI as adapter layer
+✅ Contract compliance tests (e.g., repo implements Protocol)
 
----
+✅ CLI E2E tests for all commands
 
-## 📋 Phase Breakdown
+✅ Architecture boundary tests: layer violations raise
 
-| Phase | Goal                               | Outcome                                           |
-|-------|------------------------------------|---------------------------------------------------|
-| **0** | Project scaffold, CI, pre-commit   | `scripts/end_dev.py`, `.pre-commit-config.yaml`  |
-| **1** | Deck builder MVP                   | `deck build` CLI with filters and JSON output    |
-| 1.4 | Environment-aware CLI paths        | `data/` for spell JSON, `exports/` for decks |
-| **2** | Deck renderer                      | `deck render` with golden test for HTML/PDF      |
-| **3** | Art prompt + generation            | `deck art` with saved prompt/image paths         |
-| **4** | Interactive CLI menu               | `deck build --interactive` with confirm loop     |
+🚫 Out of Scope (Until Post-MVP)
+Trait/feature/monster cards
 
----
+Scene generators
 
-## 🚫 Out of Scope (Until Post-MVP)
+Plugin framework
 
-- Trait/feature cards  
-- Scene generation  
-- Plugin support  
-- API or web interface  
-- OpenAI live calls without mocks  
-- Any rendering without snapshot test  
+Web UI / API server
 
----
+Live OpenAI calls
 
-## 🔧 Git Discipline
+Anything not golden tested
 
-- **Branch strategy**: `main`, `dev`, `feat/*`, `fix/*`, `refactor/*`
-- **Conventional commits**: `feat:`, `fix:`, `test:`, `refactor:`
-- **Commit policy**: One concern per commit, include test + doc
-- **Test gate**: All pushes go through `scripts/end_dev.py`
+🧱 Refactor Triggers
+Violation	Action
+❌ Logic in CLI	Extract to Controller
+❌ Reused transform/filter	Move to utils
+❌ Service uses file paths	Inject via DeckStorage protocol
+❌ Protocol not enforced	Write interface, test compliance
 
----
+🛠️ Developer Enforcement System
+scripts/end_dev.py (runs before commit)
+Step	Check
+✅ validate_env.py	PDF render version compatibility
+✅ snapshot_split.py	Save source snapshot to /snapshots/
+✅ update_docs.py	Update CLI help + roadmap phase
+✅ validate_contracts.py	Interface/protocol compliance check
+✅ check_architecture.py	Detect CLI-domain or app-infra violations
+✅ pytest with coverage	All tests must pass
+✅ black, ruff	Style and format guard
+✅ git add and commit	Atomic + scoped commit
 
-## 🧪 Test Strategy
+📦 Pre-Commit Hook
+.pre-commit-config.yaml runs end_dev.py for all staged commits. Enforced locally and in CI.
 
-- No monkeypatching — use DI only  
-- Golden output tests for deck JSON, art metadata, rendered HTML  
-- Contract tests for all input/output interfaces  
-
----
-
-## 🧱 Refactor Triggers
-
-- ❌ Logic appears in CLI → extract controller  
-- ❌ Filters or transforms reused → move to shared utility  
-- ❌ New feature breaks interface → rewrite contract before coding  
-
----
-
-**You start here. This file is your contract with yourself. Violate it, and you're building another disaster.**
+🧠 Final Law
+If a feature is not tested, documented, golden-verified, and enforced by commit hooks — it does not exist.

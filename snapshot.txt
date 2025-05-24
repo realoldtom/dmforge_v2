@@ -1,0 +1,91 @@
+# ./
+- .pre-commit-config.yaml
+- README.md
+- __init__.py
+- main.py
+- pyproject.toml
+
+# docs/
+- 00_context.md
+- 01_roadmap.md
+- 02_contracts.md
+- 03_architecture.md
+- 04_dev_lifecycle.md
+- 05_usage.md
+
+# scripts/
+- check_templates.py
+- dumb_source_split.py
+- end_dev.py
+- snapshot_split.py
+- validate_env.py
+
+# snapshots/
+- snapshot_part_1.md
+- snapshot_part_2.md
+- snapshot_part_3.md
+- snapshot_part_4.md
+
+# snapshots\sources/
+- source_chunk_1.md
+- source_chunk_2.md
+- source_chunk_3.md
+- source_chunk_4.md
+- source_chunk_5.md
+- source_chunk_6.md
+- source_chunk_7.md
+
+# src\dmforge\application/
+- __init__.py
+
+# src\dmforge\application\controllers/
+- deck_controller.py
+- render_controller.py
+
+# src\dmforge\application\ports/
+- deck_storage.py
+- render_service.py
+- spell_repository.py
+
+# src\dmforge\application\services/
+- deck_builder.py
+- weasy_renderer.py
+
+# src\dmforge\domain/
+- __init__.py
+- models.py
+
+# src\dmforge\infrastructure/
+- __init__.py
+
+# src\dmforge\infrastructure\repository/
+- __init__.py
+- json_deck_storage.py
+- json_spell_repository.py
+
+# src\dmforge\interface\cli/
+- deck_build.py
+- deck_render.py
+
+# tests/
+- __init__.py
+
+# tests\application/
+- __init__.py
+- test_deck_builder.py
+
+# tests\application\ports/
+- __init__.py
+- test_spell_repository_contract.py
+
+# tests\domain/
+- __init__.py
+- test_models.py
+
+# tests\infrastructure\repository/
+- test_json_spell_repository.py
+
+# tests\interface\cli/
+- test_deck_build.py
+- test_deck_render.py
+
