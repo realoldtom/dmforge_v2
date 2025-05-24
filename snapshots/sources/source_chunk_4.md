@@ -1,21 +1,18 @@
 # File: src/dmforge/application/services/weasy_renderer.py
 ```python
-# Complete weasy_renderer.py file - ONLY the class definition
-# src/dmforge/application/services/weasy_renderer.py
-
 import logging
-import typer
 from pathlib import Path
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-from weasyprint import HTML
-from dmforge.domain.models import Deck
-from packaging.version import parse as vparse
-import weasyprint
-import pydyf
 
+import pydyf  # ✅ needed for version check
+import weasyprint
+from dmforge.domain.models import Deck
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from packaging.version import parse as vparse
+from weasyprint import HTML
+
+# Version checks (breaks in >= 61.0 and 0.11.0)
 if vparse(weasyprint.__version__) >= vparse("61.0"):
     raise RuntimeError("❌ weasyprint >= 61.0 breaks PDF rendering. Pin to 60.1.")
-
 if vparse(pydyf.__version__) >= vparse("0.11.0"):
     raise RuntimeError("❌ pydyf >= 0.11.0 breaks PDF constructor compatibility. Pin to 0.10.0.")
 
@@ -26,85 +23,74 @@ class WeasyRenderer:
         self.asset_dir = asset_dir
         self.verbose = verbose
         self.env = self._setup_jinja_env()
-        
-        # Set up logging level based on verbose flag
+
         if verbose:
-            logging.getLogger('weasyprint').setLevel(logging.DEBUG)
+            logging.getLogger("weasyprint").setLevel(logging.DEBUG)
         else:
-            logging.getLogger('weasyprint').setLevel(logging.WARNING)
+            logging.getLogger("weasyprint").setLevel(logging.WARNING)
 
     def _setup_jinja_env(self) -> Environment:
-        """Setup Jinja2 environment with custom filters."""
-        env = Environment(
+        return Environment(
             loader=FileSystemLoader(str(self.template_dir)),
-            autoescape=select_autoescape(['html', 'xml'])
+            autoescape=select_autoescape(["html", "xml"]),
         )
-        return env
 
     def render_html(self, deck: Deck, output_path: str) -> None:
-        """Render deck to HTML."""
         try:
             html_content = self._render_html_content(deck)
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 f.write(html_content)
             if self.verbose:
                 logging.info(f"✅ HTML rendered successfully: {output_path}")
         except Exception as e:
             logging.error(f"❌ HTML rendering failed: {str(e)}")
-            raise RuntimeError(f"HTML rendering failed: {str(e)}")
+            raise RuntimeError(f"HTML rendering failed: {str(e)}") from e  # ✅ fix
 
     def render_pdf(self, deck: Deck, output_path: Path) -> None:
-        """Render deck to PDF using WeasyPrint (public API only)."""
         try:
             html_string = self._render_html_content(deck)
             html = HTML(string=html_string, base_url=str(self.asset_dir))
-            
+
             if self.verbose:
                 logging.info(f"🔍 Rendering PDF to: {output_path}")
                 logging.info(f"🔍 HTML content size: {len(html_string)} characters")
-            
-            html.write_pdf(target=str(output_path))  # Safe, single public API call
+
+            html.write_pdf(target=str(output_path))
 
             if self.verbose:
                 logging.info(f"✅ PDF rendered successfully: {output_path}")
-                
         except Exception as e:
             logging.error(f"❌ PDF rendering failed: {str(e)}")
-            raise RuntimeError(f"PDF rendering failed: {str(e)}")
-
+            raise RuntimeError(f"PDF rendering failed: {str(e)}") from e  # ✅ fix
 
     @staticmethod
     def check_pdf_dependencies() -> dict:
         try:
             import weasyprint
-            import pydyf
+
             return {
-                'weasyprint_installed': True,
-                'pydyf_installed': True,
-                'available': True,
-                'weasyprint_version': weasyprint.__version__,
-                'recommendations': [],
-                'error': None
+                "weasyprint_installed": True,
+                "pydyf_installed": True,
+                "available": True,
+                "weasyprint_version": weasyprint.__version__,
+                "recommendations": [],
+                "error": None,
             }
         except ImportError as e:
             return {
-                'weasyprint_installed': False,
-                'pydyf_installed': False,
-                'available': False,
-                'weasyprint_version': None,
-                'recommendations': [
-                    'poetry add weasyprint',
-                    'poetry add pydyf'
+                "weasyprint_installed": False,
+                "pydyf_installed": False,
+                "available": False,
+                "weasyprint_version": None,
+                "recommendations": [
+                    "poetry add weasyprint",
+                    "poetry add pydyf",
                 ],
-                'error': str(e)
+                "error": str(e),
             }
 
-
-
     def _render_html_content(self, deck: Deck) -> str:
-        """Render the HTML content for a deck."""
-        autoescape=select_autoescape(['html', 'xml', 'j2'])
-        template = self.env.get_template('deck.html.j2')
+        template = self.env.get_template("deck.html.j2")
         return template.render(deck=deck)
 ```
 # File: src/dmforge/domain/__init__.py
@@ -177,9 +163,10 @@ class DeckOptions:
 ```python
 import json
 from pathlib import Path
-from dmforge.domain.models import Deck, SpellCard
+
 from dmforge.application.ports.deck_storage import DeckStorage
-from dmforge.application.services.weasy_renderer import WeasyRenderer
+from dmforge.domain.models import Deck, SpellCard
+
 
 class JSONDeckStorage(DeckStorage):
     def save(self, deck: Deck, path: Path) -> None:
@@ -190,9 +177,7 @@ class JSONDeckStorage(DeckStorage):
         return Deck(
             name=data["name"],
             version=data["version"],
-            cards=[
-                SpellCard(**card) for card in data["cards"]
-            ]
+            cards=[SpellCard(**card) for card in data["cards"]],
         )
 ```
 # File: src/dmforge/infrastructure/repository/json_spell_repository.py
@@ -216,6 +201,7 @@ class JSONSpellRepository:
 ```
 # File: src/dmforge/interface/cli/deck_build.py
 ```python
+from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Optional
 
@@ -229,8 +215,10 @@ app = typer.Typer()
 
 @app.command()
 def build(
-    spell_data: Annotated[Path, typer.Option("--spell-data", help="Path to spell JSON")],
-    output: Annotated[Path, typer.Option("--output", help="Path to save deck JSON")],
+    spell_data: Annotated[Path, typer.Option("--spell-data", help="Path to spell JSON")] = Path(
+        "data/spells/spells.json"
+    ),
+    output: Annotated[Path, typer.Option("--output", help="Path to save deck JSON")] = None,
     name: Annotated[str, typer.Option("--name", help="Deck name")] = "Untitled Deck",
     classes: Annotated[
         Optional[list[str]], typer.Option("--class", "-c", help="Class filters")
@@ -245,6 +233,19 @@ def build(
     """
     Build a filtered deck of spells from input data.
     """
+    # Validate spell_data file exists
+    if not spell_data.exists():
+        typer.echo(f"❌ Spell data not found at: {spell_data}", err=True)
+        raise typer.Exit(1)
+
+    # Default output file if not provided
+    if output is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output = Path(f"exports/dev/deck_{timestamp}.json")
+
+    # Ensure output directory exists
+    output.parent.mkdir(parents=True, exist_ok=True)
+
     classes = classes or []
     levels = levels or []
     schools = schools or []

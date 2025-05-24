@@ -175,8 +175,8 @@ If a feature is not tested, documented, and gated by a commit discipline, it doe
 # File: scripts/check_templates.py
 ```python
 #!/usr/bin/env python
-from pathlib import Path
 import sys
+from pathlib import Path
 
 required_templates = ["deck.html.j2"]
 template_dir = Path("src/dmforge/resources/templates")
@@ -207,6 +207,7 @@ EXCLUDED_NAMES = {"__pycache__", ".venv", ".git", ".mypy_cache", ".pytest_cache"
 
 LINES_PER_FILE = 300  # split output to keep it pasteable
 
+
 def should_include(path: Path) -> bool:
     if not path.is_file():
         return False
@@ -218,6 +219,7 @@ def should_include(path: Path) -> bool:
         return False
     return True
 
+
 def gather_files():
     files = []
     for root, _, filenames in os.walk(PROJECT_ROOT):
@@ -226,6 +228,7 @@ def gather_files():
             if should_include(fpath.relative_to(PROJECT_ROOT)):
                 files.append(fpath.relative_to(PROJECT_ROOT))
     return sorted(files)
+
 
 def dump_chunks(files):
     chunks = []
@@ -239,13 +242,18 @@ def dump_chunks(files):
             content_lines = full_path.read_text(encoding="utf-8").splitlines()
         except Exception as e:
             content_lines = [f"# ERROR reading file {file}: {e}"]
-        block = [rel_path_str] + ["```python" if file.suffix == ".py" else "```"] + content_lines + ["```"]
-        
+        block = (
+            [rel_path_str]
+            + ["```python" if file.suffix == ".py" else "```"]
+            + content_lines
+            + ["```"]
+        )
+
         if line_count + len(block) > LINES_PER_FILE and current_chunk:
             chunks.append(current_chunk)
             current_chunk = []
             line_count = 0
-        
+
         current_chunk.extend(block)
         line_count += len(block)
 
@@ -253,6 +261,7 @@ def dump_chunks(files):
         chunks.append(current_chunk)
 
     return chunks
+
 
 def write_chunks(chunks):
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -262,10 +271,12 @@ def write_chunks(chunks):
             f.write("\n".join(chunk))
         print(f"✅ Wrote: {path.relative_to(PROJECT_ROOT)}")
 
+
 def main():
     files = gather_files()
     chunks = dump_chunks(files)
     write_chunks(chunks)
+
 
 if __name__ == "__main__":
     main()

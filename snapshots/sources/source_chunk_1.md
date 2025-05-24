@@ -102,6 +102,7 @@ dmforge deck art deck.json
 |-------|------------------------------------|---------------------------------------------------|
 | **0** | Project scaffold, CI, pre-commit   | `scripts/end_dev.py`, `.pre-commit-config.yaml`  |
 | **1** | Deck builder MVP                   | `deck build` CLI with filters and JSON output    |
+| 1.4 | Environment-aware CLI paths        | `data/` for spell JSON, `exports/` for decks |
 | **2** | Deck renderer                      | `deck render` with golden test for HTML/PDF      |
 | **3** | Art prompt + generation            | `deck art` with saved prompt/image paths         |
 | **4** | Interactive CLI menu               | `deck build --interactive` with confirm loop     |

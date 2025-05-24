@@ -8,9 +8,9 @@ import sys
 def run_check(command: list[str], description: str):
     print(f"🔍 Running: {description} ...")
     result = subprocess.run(command)
-    
+
     # Windows access violation fix
-    if result.returncode == 3221225477 and "pytest" in command[0]:
+    if result.returncode == 3221225477 and any("pytest" in part for part in command):
         print(f"⚠️ {description} exited with Windows access violation but tests passed")
         result.returncode = 0  # treat it as a pass
 
@@ -19,9 +19,6 @@ def run_check(command: list[str], description: str):
     else:
         print(f"❌ {description} failed (code {result.returncode})")
         sys.exit(result.returncode)
-
-
-
 
 
 def main():
@@ -34,8 +31,12 @@ def main():
 
     run_check(["python", "scripts/validate_env.py"], "render stack compatibility check")
     import os
+
     os.environ["GDK_BACKEND"] = "win32"
-    run_check(["poetry", "run", "pytest", "--cov", "--exitfirst", "-p", "no:warnings"], "tests with coverage")
+    run_check(
+        ["poetry", "run", "pytest", "--cov", "--exitfirst", "-p", "no:warnings"],
+        "tests with coverage",
+    )
     run_check(["poetry", "run", "black", "."], "code formatting check")
     run_check(["poetry", "run", "ruff", "check", ".", "--fix"], "style linting")
     run_check(["poetry", "check"], "Poetry dependency integrity")
@@ -59,7 +60,18 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Folders to exclude from snapshot
-EXCLUDED_DIRS = {".venv", "__pycache__", ".pytest_cache", ".mypy_cache", ".git", "dist", "build", ".idea", ".vscode", ".ruff_cache"}
+EXCLUDED_DIRS = {
+    ".venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".git",
+    "dist",
+    "build",
+    ".idea",
+    ".vscode",
+    ".ruff_cache",
+}
 EXCLUDED_FILES = {".DS_Store"}
 
 # File extensions to include
@@ -67,6 +79,7 @@ INCLUDE_EXTENSIONS = {".py", ".toml", ".yaml", ".yml", ".md"}
 
 # Output file (or print to console)
 OUTPUT_FILE = PROJECT_ROOT / "snapshot.txt"
+
 
 def should_include(path: Path) -> bool:
     if path.name in EXCLUDED_FILES:
@@ -76,9 +89,10 @@ def should_include(path: Path) -> bool:
     parts = set(path.parts)
     return not parts.intersection(EXCLUDED_DIRS)
 
+
 def main():
     with OUTPUT_FILE.open("w", encoding="utf-8") as out:
-        for root, dirs, files in os.walk(PROJECT_ROOT):
+        for root, _, files in os.walk(PROJECT_ROOT):
             root_path = Path(root)
             # Skip excluded dirs
             if any(part in EXCLUDED_DIRS for part in root_path.parts):
@@ -93,14 +107,18 @@ def main():
                 out.write("\n")
     print(f"📄 Snapshot written to: {OUTPUT_FILE}")
 
+
 if __name__ == "__main__":
     main()
 ```
 # File: scripts/validate_env.py
 ```python
+import sys
+
+
 def check_render_stack():
-    import weasyprint
     import pydyf
+    import weasyprint
     from packaging.version import parse as vparse
 
     if vparse(weasyprint.__version__) >= vparse("61.0"):
@@ -141,8 +159,10 @@ class DeckController:
 # File: src/dmforge/application/controllers/render_controller.py
 ```python
 from pathlib import Path
-from dmforge.application.ports.render_service import RenderService
+
 from dmforge.application.ports.deck_storage import DeckStorage
+from dmforge.application.ports.render_service import RenderService
+
 
 class RenderController:
     def __init__(self, renderer: RenderService, storage: DeckStorage):
@@ -161,8 +181,10 @@ class RenderController:
 # File: src/dmforge/application/ports/deck_storage.py
 ```python
 from pathlib import Path
-from dmforge.domain.models import Deck
 from typing import Protocol
+
+from dmforge.domain.models import Deck
+
 
 class DeckStorage(Protocol):
     def save(self, deck: Deck, path: Path) -> None: ...
@@ -172,7 +194,9 @@ class DeckStorage(Protocol):
 ```python
 from pathlib import Path
 from typing import Protocol
+
 from dmforge.domain.models import Deck
+
 
 class RenderService(Protocol):
     def render_pdf(self, deck: Deck, output_path: Path) -> None: ...
