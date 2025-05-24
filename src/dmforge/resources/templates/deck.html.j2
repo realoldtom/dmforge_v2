@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{{ deck.name }}</title>
+</head>
+<body>
+  <h1>{{ deck.name }}</h1>
+  <ul>
+    {% for card in deck.cards %}
+    <li>
+      <strong>{{ card.name }}</strong> (Level {{ card.level }} - {{ card.school }})<br>
+      <em>{{ card.description }}</em><br>
+      Duration: {{ card.duration }}
+    </li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

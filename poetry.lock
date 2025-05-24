@@ -1224,14 +1224,14 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pydyf"
-version = "0.11.0"
+version = "0.10.0"
 description = "A low-level PDF generator."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "pydyf-0.11.0-py3-none-any.whl", hash = "sha256:0aaf9e2ebbe786ec7a78ec3fbffa4cdcecde53fd6f563221d53c6bc1328848a3"},
-    {file = "pydyf-0.11.0.tar.gz", hash = "sha256:394dddf619cca9d0c55715e3c55ea121a9bf9cbc780cdc1201a2427917b86b64"},
+    {file = "pydyf-0.10.0-py3-none-any.whl", hash = "sha256:ef76b6c0976a091a9e15827fb5800e5e37e7cd1a3ca4d4bd19d10a14ea8c0ae3"},
+    {file = "pydyf-0.10.0.tar.gz", hash = "sha256:357194593efaf61d7b48ab97c3d59722114934967c3df3d7878ca6dd25b04c30"},
 ]
 
 [package.extras]
@@ -1524,14 +1524,14 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "weasyprint"
-version = "61.2"
+version = "60.1"
 description = "The Awesome Document Factory"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "weasyprint-61.2-py3-none-any.whl", hash = "sha256:76c6dc0e75e09182d5645d92c66ddf86b1b992c9420235b723fb374b584e5bf4"},
-    {file = "weasyprint-61.2.tar.gz", hash = "sha256:47df6cfeeff8c6c28cf2e4caf837cde17715efe462708ada74baa2eb391b6059"},
+    {file = "weasyprint-60.1-py3-none-any.whl", hash = "sha256:55227e5e44f5f34bc9cec651329bd38d063ef7d29151d4b058d4af1ca943d4a7"},
+    {file = "weasyprint-60.1.tar.gz", hash = "sha256:56b9812280118357b0f63b1efe18199e08343d4a56a3393c1d475ab878cea26a"},
 ]
 
 [package.dependencies]
@@ -1647,4 +1647,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "b92aa6528576b8daa2d98de366ee4d2ac71e750e53468379d066085143b694f7"
+content-hash = "9ec97e1fe236a0995feba4a1b7d0b389d9d8bf5913766286fd7f9d37d0f4eeab"
