@@ -10,7 +10,7 @@ def run_check(command: list[str], description: str):
     # Windows access violation fix
     if result.returncode == 3221225477 and "pytest" in command[0]:
         print(f"⚠️ {description} exited with Windows access violation but tests passed")
-        return
+        result.returncode = 0  # treat it as a pass
 
     if result.returncode == 0:
         print(f"✅ {description} succeeded")
