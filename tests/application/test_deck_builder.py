@@ -1,4 +1,4 @@
-from dmforge.application.deck_builder import BasicDeckBuilder
+from dmforge.application.services.deck_builder import BasicDeckBuilder
 from dmforge.domain.models import DeckOptions
 
 
