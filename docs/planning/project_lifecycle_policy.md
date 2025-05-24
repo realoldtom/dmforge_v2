@@ -65,4 +65,9 @@ Optional, but recommended for neurodivergent devs:
 - Logging of session starts + completions in `daily_log/`
 - No new tasks until previous commit passes lifecycle checks
 
+## 🧠 GPT Interaction Policy
 
+- All GPT usage must start with `docs/system/gpt_system_prompt.md`
+- GPT sessions must only receive grouped snapshot files (max 19)
+- If system prompt is updated, it must be versioned and logged in `decision_log.md`
+- Developer must confirm system prompt match before GPT upload
