@@ -12,6 +12,34 @@
 - 03_architecture.md
 - 04_dev_lifecycle.md
 - 05_usage.md
+- decision_log.md
+
+# docs\planning/
+- 00_index.md
+- decision_log.md
+- feature_DEV_SUPPORT_AUTOMATION.md
+- personas_and_user_stories.md
+- project_lifecycle.md
+- project_lifecycle_policy.md
+- requirements_tracability_matrix.md
+- risk_log.md
+- roadmap_versions.md
+- test_strategy.md
+
+# docs\planning\lifecycle_versions/
+- lifecycle_v1.0_2025-05-24.md
+
+# docs\planning\roadmap_snapshots/
+- roadmap_phase_X0_2025-05-24..md
+
+# docs\planning\roadmap_versions/
+- roadmap_phase_1.0_2025-05-24.md
+
+# docs\system/
+- gpt_system_prompt.md
+
+# docs\system\system_prompt_versions/
+- system_prompt_v1.0_2025-05-24.md
 
 # scripts/
 - check_templates.py
@@ -19,6 +47,7 @@
 - end_dev.py
 - snapshot_split.py
 - validate_env.py
+- version_docs.py
 
 # snapshots/
 - snapshot_part_1.md
@@ -88,4 +117,7 @@
 # tests\interface\cli/
 - test_deck_build.py
 - test_deck_render.py
+
+# tests\scripts/
+- test_version_docs.py
 

@@ -1,3 +1,5 @@
+## Version: 1.1 (2025-05-26)
+
 # File: docs/planning/decision_log.md
 
 # 📘 DMForge Decision Log

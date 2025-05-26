@@ -6,7 +6,7 @@ import pytest
 from dmforge.interface.cli.deck_render import app
 from typer.testing import CliRunner
 
-runner = CliRunner()
+runner = CliRunner(mix_stderr=False)
 
 
 def copy_template_to(tmp_template_dir: Path):

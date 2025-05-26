@@ -1,3 +1,5 @@
+## Version: 1.0 (2025-05-26)
+
 # 🧪 DMForge v2 Developer Lifecycle
 
 This file defines your **daily developer ritual** — including Git, testing, scripting, and CI guardrails.  

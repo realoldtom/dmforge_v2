@@ -35,7 +35,6 @@ Phase	Goal	Outcome
 2	PDF/HTML Renderer	WeasyPrint support with golden testing
 2.1	PDF Compatibility Guard	Enforce weasyprint < 61.0, pydyf < 0.11.0
 2.5	6-Up Printable Layout (Grid + Breaks)	Card sheet layout for print
-2.6 CLI validation + verbose logging (render/validate commands)
 3	Art Prompt + DALL·E Integration	Prompts, metadata, stable paths
 4	Interactive CLI Menu	deck build --interactive with filters
 X.0	Enforcement system	Full automation of snapshot, contracts, docs

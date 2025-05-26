@@ -1,3 +1,5 @@
+## Version: 1.0 (2025-05-26)
+
 # File: docs/planning/personas_and_user_stories.md
 
 # 👥 DMForge Personas & User Stories

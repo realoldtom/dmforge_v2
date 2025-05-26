@@ -1,256 +1,702 @@
-# File: scripts/end_dev.py
+# FILE: tests/infrastructure/repository/test_json_spell_repository.py
 ```python
-# scripts/end_dev.py
-import subprocess
-import sys
+import json
+from pathlib import Path
+
+import pytest
+from dmforge.infrastructure.repository.json_spell_repository import JSONSpellRepository
 
 
-def run_check(command: list[str], description: str):
-    print(f"🔍 Running: {description} ...")
-    result = subprocess.run(command)
+def test_load_all_spells(tmp_path: Path):
+    spell_data = [
+        {
+            "name": "Magic Missile",
+            "level": 1,
+            "school": "Evocation",
+            "classes": ["Wizard"],
+            "desc": "Shoots darts",
+            "duration": "Instant",
+        },
+        {
+            "name": "Shield",
+            "level": 1,
+            "school": "Abjuration",
+            "classes": ["Wizard"],
+            "desc": "Adds AC",
+            "duration": "1 round",
+        },
+    ]
+    file_path = tmp_path / "spells.json"
+    file_path.write_text(json.dumps(spell_data), encoding="utf-8")
 
-    # Windows access violation fix
-    if result.returncode == 3221225477 and any("pytest" in part for part in command):
-        print(f"⚠️ {description} exited with Windows access violation but tests passed")
-        result.returncode = 0  # treat it as a pass
+    repo = JSONSpellRepository(file_path)
+    result = repo.load_all_spells()
 
-    if result.returncode == 0:
-        print(f"✅ {description} succeeded")
-    else:
-        print(f"❌ {description} failed (code {result.returncode})")
-        sys.exit(result.returncode)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert result[0]["name"] == "Magic Missile"
 
 
-def main():
-    if len(sys.argv) < 2:
-        print("❌ ERROR: Commit message required.")
-        print('Usage: python scripts/end_dev.py "feat: add spell filter"')
-        sys.exit(1)
+def test_missing_file_raises(tmp_path: Path):
+    file_path = tmp_path / "nonexistent.json"
+    repo = JSONSpellRepository(file_path)
+    with pytest.raises(FileNotFoundError):
+        repo.load_all_spells()
 
-    msg = sys.argv[1]
 
-    run_check(["python", "scripts/validate_env.py"], "render stack compatibility check")
-    import os
+def test_invalid_data_raises(tmp_path: Path):
+    file_path = tmp_path / "invalid.json"
+    file_path.write_text('{"not": "a list"}', encoding="utf-8")
 
-    os.environ["GDK_BACKEND"] = "win32"
-    run_check(
-        ["poetry", "run", "pytest", "--cov", "--exitfirst", "-p", "no:warnings"],
-        "tests with coverage",
+    repo = JSONSpellRepository(file_path)
+    with pytest.raises(ValueError):
+        repo.load_all_spells()
+```
+
+# FILE: tests/infrastructure/repository/test_json_spell_repository.py
+```python
+import json
+from pathlib import Path
+
+import pytest
+from dmforge.infrastructure.repository.json_spell_repository import JSONSpellRepository
+
+
+def test_load_all_spells(tmp_path: Path):
+    spell_data = [
+        {
+            "name": "Magic Missile",
+            "level": 1,
+            "school": "Evocation",
+            "classes": ["Wizard"],
+            "desc": "Shoots darts",
+            "duration": "Instant",
+        },
+        {
+            "name": "Shield",
+            "level": 1,
+            "school": "Abjuration",
+            "classes": ["Wizard"],
+            "desc": "Adds AC",
+            "duration": "1 round",
+        },
+    ]
+    file_path = tmp_path / "spells.json"
+    file_path.write_text(json.dumps(spell_data), encoding="utf-8")
+
+    repo = JSONSpellRepository(file_path)
+    result = repo.load_all_spells()
+
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert result[0]["name"] == "Magic Missile"
+
+
+def test_missing_file_raises(tmp_path: Path):
+    file_path = tmp_path / "nonexistent.json"
+    repo = JSONSpellRepository(file_path)
+    with pytest.raises(FileNotFoundError):
+        repo.load_all_spells()
+
+
+def test_invalid_data_raises(tmp_path: Path):
+    file_path = tmp_path / "invalid.json"
+    file_path.write_text('{"not": "a list"}', encoding="utf-8")
+
+    repo = JSONSpellRepository(file_path)
+    with pytest.raises(ValueError):
+        repo.load_all_spells()
+```
+
+# FILE: tests/interface/cli/test_deck_build.py
+```python
+import json
+
+from dmforge.interface.cli.deck_build import app
+from typer.testing import CliRunner
+
+runner = CliRunner(mix_stderr=False)
+
+
+def test_build_basic_deck(tmp_path):
+    # Arrange: input spell data
+    spell_data = tmp_path / "spells.json"
+    spell_data.write_text(
+        json.dumps(
+            [
+                {
+                    "name": "Magic Missile",
+                    "level": 1,
+                    "school": "Evocation",
+                    "classes": ["Wizard"],
+                    "desc": "Shoots darts of magical force.",
+                    "duration": "Instantaneous",
+                },
+                {
+                    "name": "Cure Wounds",
+                    "level": 1,
+                    "school": "Evocation",
+                    "classes": ["Cleric"],
+                    "desc": "Heals a creature you touch.",
+                    "duration": "Instantaneous",
+                },
+            ]
+        ),
+        encoding="utf-8",
     )
-    run_check(["poetry", "run", "black", "."], "code formatting check")
-    run_check(["poetry", "run", "ruff", "check", ".", "--fix"], "style linting")
-    run_check(["poetry", "check"], "Poetry dependency integrity")
-    run_check(["poetry", "lock"], "Lock file update")
-    run_check(["git", "add", "."], "git stage all")
-    run_check(["git", "commit", "-m", msg], "git commit")
-    run_check(["git", "push"], "git push")
 
+    output_path = tmp_path / "deck.json"
 
-if __name__ == "__main__":
-    main()
+    # Act: call the CLI
+    result = runner.invoke(
+        app, ["--spell-data", str(spell_data), "--output", str(output_path), "--class", "Wizard"]
+    )
+    print("STDOUT:\n", result.stdout)
+    print("STDERR:\n", result.stderr)
+    # Assert: CLI succeeded and output file matches snapshot
+    assert result.exit_code == 0
+    assert output_path.exists()
+
+    generated = json.loads(output_path.read_text(encoding="utf-8"))
+
+    expected = {
+        "name": "Untitled Deck",
+        "version": "v1",
+        "cards": [
+            {
+                "name": "Magic Missile",
+                "level": 1,
+                "school": "Evocation",
+                "classes": ["Wizard"],
+                "description": "Shoots darts of magical force.",
+                "duration": "Instantaneous",
+                "art_path": None,
+            }
+        ],
+    }
+
+    assert generated == expected
 ```
-# File: scripts/snapshot_split.py
-```python
-#!/usr/bin/env python
 
-import os
+# FILE: tests/interface/cli/test_deck_build.py
+```python
+import json
+
+from dmforge.interface.cli.deck_build import app
+from typer.testing import CliRunner
+
+runner = CliRunner(mix_stderr=False)
+
+
+def test_build_basic_deck(tmp_path):
+    # Arrange: input spell data
+    spell_data = tmp_path / "spells.json"
+    spell_data.write_text(
+        json.dumps(
+            [
+                {
+                    "name": "Magic Missile",
+                    "level": 1,
+                    "school": "Evocation",
+                    "classes": ["Wizard"],
+                    "desc": "Shoots darts of magical force.",
+                    "duration": "Instantaneous",
+                },
+                {
+                    "name": "Cure Wounds",
+                    "level": 1,
+                    "school": "Evocation",
+                    "classes": ["Cleric"],
+                    "desc": "Heals a creature you touch.",
+                    "duration": "Instantaneous",
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    output_path = tmp_path / "deck.json"
+
+    # Act: call the CLI
+    result = runner.invoke(
+        app, ["--spell-data", str(spell_data), "--output", str(output_path), "--class", "Wizard"]
+    )
+    print("STDOUT:\n", result.stdout)
+    print("STDERR:\n", result.stderr)
+    # Assert: CLI succeeded and output file matches snapshot
+    assert result.exit_code == 0
+    assert output_path.exists()
+
+    generated = json.loads(output_path.read_text(encoding="utf-8"))
+
+    expected = {
+        "name": "Untitled Deck",
+        "version": "v1",
+        "cards": [
+            {
+                "name": "Magic Missile",
+                "level": 1,
+                "school": "Evocation",
+                "classes": ["Wizard"],
+                "description": "Shoots darts of magical force.",
+                "duration": "Instantaneous",
+                "art_path": None,
+            }
+        ],
+    }
+
+    assert generated == expected
+```
+
+# FILE: tests/interface/cli/test_deck_render.py
+```python
+import json
+import shutil
 from pathlib import Path
 
-# Set project root (assumes script is in dmforge_v2/scripts/)
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+import pytest
+from dmforge.interface.cli.deck_render import app
+from typer.testing import CliRunner
 
-# Folders to exclude from snapshot
-EXCLUDED_DIRS = {
-    ".venv",
-    "__pycache__",
-    ".pytest_cache",
-    ".mypy_cache",
-    ".git",
-    "dist",
-    "build",
-    ".idea",
-    ".vscode",
-    ".ruff_cache",
-}
-EXCLUDED_FILES = {".DS_Store"}
-
-# File extensions to include
-INCLUDE_EXTENSIONS = {".py", ".toml", ".yaml", ".yml", ".md"}
-
-# Output file (or print to console)
-OUTPUT_FILE = PROJECT_ROOT / "snapshot.txt"
+runner = CliRunner(mix_stderr=False)
 
 
-def should_include(path: Path) -> bool:
-    if path.name in EXCLUDED_FILES:
-        return False
-    if path.suffix not in INCLUDE_EXTENSIONS:
-        return False
-    parts = set(path.parts)
-    return not parts.intersection(EXCLUDED_DIRS)
+def copy_template_to(tmp_template_dir: Path):
+    real_template = Path("src/dmforge/resources/templates/deck.html.j2")
+    assert real_template.exists(), "❌ Template missing: deck.html.j2"
+    tmp_template_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy(real_template, tmp_template_dir / "deck.html.j2")
 
 
-def main():
-    with OUTPUT_FILE.open("w", encoding="utf-8") as out:
-        for root, _, files in os.walk(PROJECT_ROOT):
-            root_path = Path(root)
-            # Skip excluded dirs
-            if any(part in EXCLUDED_DIRS for part in root_path.parts):
-                continue
-
-            included_files = [f for f in files if should_include(root_path / f)]
-            if included_files:
-                rel_root = root_path.relative_to(PROJECT_ROOT)
-                out.write(f"# {rel_root}/\n")
-                for file in sorted(included_files):
-                    out.write(f"- {file}\n")
-                out.write("\n")
-    print(f"📄 Snapshot written to: {OUTPUT_FILE}")
-
-
-if __name__ == "__main__":
-    main()
-```
-# File: scripts/validate_env.py
-```python
-import sys
-
-
-def check_render_stack():
-    import pydyf
-    import weasyprint
-    from packaging.version import parse as vparse
-
-    if vparse(weasyprint.__version__) >= vparse("61.0"):
-        print("❌ Incompatible weasyprint version:", weasyprint.__version__)
-        sys.exit(1)
-
-    if vparse(pydyf.__version__) >= vparse("0.11.0"):
-        print("❌ Incompatible pydyf version:", pydyf.__version__)
-        sys.exit(1)
-
-    print("✅ PDF render stack OK:", weasyprint.__version__, "/", pydyf.__version__)
-```
-# File: src/dmforge/application/__init__.py
-```python
-```
-# File: src/dmforge/application/controllers/deck_controller.py
-```python
-from dmforge.application.services.deck_builder import DeckBuilder
-from dmforge.domain.models import Deck, DeckOptions
+def create_test_deck_file(path: Path, custom_data=None):
+    """Create a test deck JSON file with optional custom data."""
+    deck_data = custom_data or {
+        "name": "Test Deck",
+        "version": "v1",
+        "cards": [
+            {
+                "name": "Magic Missile",
+                "level": 1,
+                "school": "Evocation",
+                "classes": ["Wizard"],
+                "description": "Shoots darts of magical force.",
+                "duration": "Instantaneous",
+                "art_path": None,
+            },
+            {
+                "name": "Fireball",
+                "level": 3,
+                "school": "Evocation",
+                "classes": ["Wizard", "Sorcerer"],
+                "description": "A bright streak flashes from your pointing finger to a point you choose.",
+                "duration": "Instantaneous",
+                "art_path": "fireball.png",
+            },
+        ],
+    }
+    path.write_text(json.dumps(deck_data, indent=2), encoding="utf-8")
 
 
-class DeckController:
-    def __init__(self, builder: DeckBuilder):
-        self.builder = builder
+def create_test_template(template_dir: Path):
+    """Create a minimal test template."""
+    template_dir.mkdir(parents=True, exist_ok=True)
+    template_file = template_dir / "deck.html.j2"
 
-    def build_from_cli(self, options_dict: dict) -> Deck:
-        """
-        Accepts raw dict from CLI, converts to typed DeckOptions, returns Deck.
-        """
-        options = DeckOptions(
-            name=options_dict.get("name", "Untitled Deck"),
-            classes=options_dict.get("classes", []),
-            levels=options_dict.get("levels", []),
-            schools=options_dict.get("schools", []),
+    template_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ deck.name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .card { border: 1px solid #ccc; margin: 20px 0; padding: 15px; border-radius: 5px; }
+        .card-name { font-size: 1.2em; font-weight: bold; color: #2c5aa0; }
+        .card-level { color: #666; font-style: italic; }
+        .card-description { margin-top: 10px; line-height: 1.4; }
+        .deck-header { border-bottom: 2px solid #2c5aa0; padding-bottom: 10px; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <div class="deck-header">
+        <h1>{{ deck.name }}</h1>
+        <p>Version: {{ deck.version }}</p>
+        <p>Cards: {{ deck.cards|length }}</p>
+    </div>
+    
+    <div class="cards">
+        {% for card in deck.cards %}
+        <div class="card">
+            <div class="card-name">{{ card.name }}</div>
+            <div class="card-level">Level {{ card.level }} {{ card.school }}</div>
+            <div class="card-classes">Classes: {{ card.classes|join(', ') }}</div>
+            <div class="card-description">{{ card.description }}</div>
+            <div class="card-duration">Duration: {{ card.duration }}</div>
+            {% if card.art_path %}
+            <div class="card-art">Art: {{ card.art_path }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>"""
+
+    template_file.write_text(template_content, encoding="utf-8")
+    return template_file
+
+
+class TestCLI:
+
+    def test_render_html_output(self, tmp_path):
+        """Test HTML rendering with custom template."""
+        # Arrange
+        input_path = tmp_path / "deck.json"
+        output_path = tmp_path / "output.html"
+        template_dir = tmp_path / "templates"
+        asset_dir = tmp_path / "assets"
+
+        create_test_deck_file(input_path)
+        create_test_template(template_dir)
+        asset_dir.mkdir(exist_ok=True)
+
+        # Act
+        result = runner.invoke(
+            app,
+            [
+                "render",
+                "--input",
+                str(input_path),
+                "--output",
+                str(output_path),
+                "--format",
+                "html",
+                "--template-dir",
+                str(template_dir),
+                "--asset-dir",
+                str(asset_dir),
+            ],
         )
-        return self.builder.build(options)
-```
-# File: src/dmforge/application/controllers/render_controller.py
-```python
-from pathlib import Path
 
-from dmforge.application.ports.deck_storage import DeckStorage
-from dmforge.application.ports.render_service import RenderService
+        # Debug output
+        if result.stdout:
+            print("STDOUT:", result.stdout)
+        if result.stderr:
+            print("STDERR:", result.stderr)
+        if result.exception:
+            print("Exception:", result.exception)
+            import traceback
 
-
-class RenderController:
-    def __init__(self, renderer: RenderService, storage: DeckStorage):
-        self.renderer = renderer
-        self.storage = storage
-
-    def render_from_file(self, input_path: Path, fmt: str, output_path: Path) -> None:
-        deck = self.storage.load(input_path)
-        if fmt == "pdf":
-            self.renderer.render_pdf(deck, output_path)
-        elif fmt == "html":
-            self.renderer.render_html(deck, output_path)
-        else:
-            raise ValueError(f"Unsupported format: {fmt}")
-```
-# File: src/dmforge/application/ports/deck_storage.py
-```python
-from pathlib import Path
-from typing import Protocol
-
-from dmforge.domain.models import Deck
-
-
-class DeckStorage(Protocol):
-    def save(self, deck: Deck, path: Path) -> None: ...
-    def load(self, path: Path) -> Deck: ...
-```
-# File: src/dmforge/application/ports/render_service.py
-```python
-from pathlib import Path
-from typing import Protocol
-
-from dmforge.domain.models import Deck
-
-
-class RenderService(Protocol):
-    def render_pdf(self, deck: Deck, output_path: Path) -> None: ...
-    def render_html(self, deck: Deck, output_path: Path) -> None: ...
-```
-# File: src/dmforge/application/ports/spell_repository.py
-```python
-from typing import Protocol
-
-
-class SpellRepository(Protocol):
-    def load_all_spells(self) -> list[dict]: ...
-```
-# File: src/dmforge/application/services/deck_builder.py
-```python
-from typing import Protocol
-
-from dmforge.application.ports.spell_repository import SpellRepository
-from dmforge.domain.models import Deck, DeckOptions, SpellCard
-
-
-class DeckBuilder(Protocol):
-    def build(self, options: DeckOptions) -> Deck: ...
-
-
-class BasicDeckBuilder:
-    def __init__(self, repository: SpellRepository):
-        self.repository = repository
-
-    def build(self, options: DeckOptions) -> Deck:
-        spells = self.repository.load_all_spells()
-        filtered = self._apply_filters(spells, options)
-        cards = [self._to_card(spell) for spell in filtered]
-        return Deck(name=options.name, cards=cards)
-
-    def _apply_filters(self, spells: list[dict], options: DeckOptions) -> list[dict]:
-        return [
-            spell
-            for spell in spells
-            if (
-                not options.classes
-                or any(cls in spell.get("classes", []) for cls in options.classes)
+            traceback.print_exception(
+                type(result.exception), result.exception, result.exception.__traceback__
             )
-            and (not options.levels or spell.get("level") in options.levels)
-            and (not options.schools or spell.get("school") in options.schools)
-        ]
 
-    def _to_card(self, spell: dict) -> SpellCard:
-        return SpellCard(
-            name=spell.get("name", "Unknown"),
-            level=spell.get("level", 0),
-            school=spell.get("school", "Unknown"),
-            classes=spell.get("classes", []),
-            description=spell.get("desc", ""),
-            duration=spell.get("duration", "Instantaneous"),
+        # Assert
+        assert result.exit_code == 0, f"Command failed with exit code {result.exit_code}"
+        assert output_path.exists(), "Output file was not created"
+
+        html_output = output_path.read_text(encoding="utf-8")
+        assert "Magic Missile" in html_output
+        assert "Fireball" in html_output
+        assert "<html" in html_output.lower()
+        assert "Test Deck" in html_output
+
+    def test_render_pdf_output(self, tmp_path):
+        """Test PDF rendering with custom template."""
+        # Arrange
+        input_path = tmp_path / "deck.json"
+        output_path = tmp_path / "output.pdf"
+        template_dir = tmp_path / "templates"
+        asset_dir = tmp_path / "assets"
+
+        create_test_deck_file(input_path)
+        create_test_template(template_dir)
+        asset_dir.mkdir(exist_ok=True)
+
+        # Act
+        result = runner.invoke(
+            app,
+            [
+                "render",
+                "--input",
+                str(input_path),
+                "--output",
+                str(output_path),
+                "--format",
+                "pdf",
+                "--template-dir",
+                str(template_dir),
+                "--asset-dir",
+                str(asset_dir),
+                "--verbose",
+            ],
         )
+
+        # Debug output
+        print("STDOUT:\n", result.stdout)
+        if result.stderr:
+            print("STDERR:\n", result.stderr)
+
+        # Handle exceptions with specific checks
+        if result.exit_code != 0:
+            print("STDOUT:", result.stdout)
+            print("STDERR:", result.stderr)
+            print("EXCEPTION:", result.exception)
+            pytest.fail(f"PDF render command failed: {result.exception}")
+
+        # Assert
+        assert result.exit_code == 0, f"Command failed with exit code {result.exit_code}"
+        assert output_path.exists(), "PDF output file was not created"
+
+        # Check file size (PDF should be reasonably sized)
+        size = output_path.stat().st_size
+        assert size > 1000, f"PDF file too small ({size} bytes), might be corrupted"
+        assert size < 10_000_000, f"PDF file too large ({size} bytes), might indicate an issue"
+
+    def test_validate_command(self, tmp_path):
+        """Test the validate command."""
+        # Arrange
+        input_path = tmp_path / "deck.json"
+        create_test_deck_file(input_path)
+
+        # Act
+        result = runner.invoke(app, ["validate", "--input", str(input_path)])
+
+        # Debug output
+        if result.stdout:
+            print("STDOUT:", result.stdout)
+        if result.exception:
+            print("Exception:", result.exception)
+
+        # Assert
+        assert result.exit_code == 0
+        assert "Valid deck with 2 cards" in result.stdout
+
+    def test_invalid_input_file(self, tmp_path):
+        """Test behavior with non-existent input file."""
+        # Arrange
+        input_path = tmp_path / "nonexistent.json"
+        output_path = tmp_path / "output.html"
+
+        # Act
+        result = runner.invoke(
+            app, ["render", "--input", str(input_path), "--output", str(output_path)]
+        )
+
+        # Debug output - check both stdout and stderr
+        print("STDOUT:", repr(result.stdout))
+        print("STDERR:", repr(result.stderr))
+        print("OUTPUT:", repr(result.output))
+
+        # Assert
+        assert result.exit_code == 1
+        # The error message might be in different places depending on how typer handles it
+        error_text = result.stdout + result.stderr + (result.output or "")
+        assert "Input file not found" in error_text or "not found" in error_text.lower()
+
+    def test_invalid_format(self, tmp_path):
+        """Test behavior with invalid format."""
+        input_path = tmp_path / "deck.json"
+        output_path = tmp_path / "output.xyz"
+        template_dir = tmp_path / "templates"
+        asset_dir = tmp_path / "assets"
+
+        create_test_deck_file(input_path)
+        create_test_template(template_dir)
+        asset_dir.mkdir(exist_ok=True)
+
+        result = runner.invoke(
+            app,
+            [
+                "render",
+                "--input",
+                str(input_path),
+                "--output",
+                str(output_path),
+                "--format",
+                "xyz",
+                "--template-dir",
+                str(template_dir),
+                "--asset-dir",
+                str(asset_dir),
+            ],
+        )
+
+        print("STDOUT:", repr(result.stdout))
+        print("STDERR:", repr(result.stderr))
+        print("OUTPUT:", repr(result.output))
+
+        assert result.exit_code == 1
+        error_text = result.stdout + result.stderr + (result.output or "")
+        assert "Unsupported format" in error_text or "format" in error_text.lower()
+
+    def test_missing_template_directory(self, tmp_path):
+        """Test behavior when template directory doesn't exist."""
+        # Arrange
+        input_path = tmp_path / "deck.json"
+        output_path = tmp_path / "output.html"
+        template_dir = tmp_path / "nonexistent_templates"
+
+        create_test_deck_file(input_path)
+
+        # Act
+        result = runner.invoke(
+            app,
+            [
+                "render",
+                "--input",
+                str(input_path),
+                "--output",
+                str(output_path),
+                "--template-dir",
+                str(template_dir),
+            ],
+        )
+
+        # Debug output
+        print("STDOUT:", repr(result.stdout))
+        print("STDERR:", repr(result.stderr))
+        print("OUTPUT:", repr(result.output))
+
+        # Assert
+        assert result.exit_code == 1
+        error_text = result.stdout + result.stderr + (result.output or "")
+        assert "Template directory not found" in error_text or "template" in error_text.lower()
+
+    def test_verbose_output(self, tmp_path):
+        """Test verbose mode output."""
+        # Arrange
+        input_path = tmp_path / "deck.json"
+        output_path = tmp_path / "output.html"
+        template_dir = tmp_path / "templates"
+        asset_dir = tmp_path / "assets"
+
+        create_test_deck_file(input_path)
+        create_test_template(template_dir)
+        asset_dir.mkdir(exist_ok=True)
+
+        # Act
+        result = runner.invoke(
+            app,
+            [
+                "render",
+                "--input",
+                str(input_path),
+                "--output",
+                str(output_path),
+                "--format",
+                "html",
+                "--template-dir",
+                str(template_dir),
+                "--asset-dir",
+                str(asset_dir),
+                "--verbose",
+            ],
+        )
+
+        # Assert
+        assert result.exit_code == 0
+        # Check that verbose output contains expected information
+        assert "🔧 Input:" in result.stdout
+        assert "🔧 Output:" in result.stdout
+        assert "🔧 Format:" in result.stdout
+
+    def test_large_deck(self, tmp_path):
+        """Test rendering with a larger deck to ensure performance."""
+        # Arrange
+        input_path = tmp_path / "large_deck.json"
+        output_path = tmp_path / "large_output.html"
+        template_dir = tmp_path / "templates"
+        asset_dir = tmp_path / "assets"
+
+        # Create a deck with many cards
+        large_deck_data = {"name": "Large Test Deck", "version": "v1", "cards": []}
+
+        # Generate 50 cards
+        for i in range(50):
+            card = {
+                "name": f"Test Spell {i+1}",
+                "level": (i % 9) + 1,
+                "school": ["Evocation", "Illusion", "Necromancy", "Abjuration"][i % 4],
+                "classes": ["Wizard", "Sorcerer", "Cleric"][: (i % 3) + 1],
+                "description": f"This is test spell number {i+1} with a longer description to test rendering performance.",
+                "duration": "1 minute" if i % 2 else "Instantaneous",
+                "art_path": f"spell_{i+1}.png" if i % 3 == 0 else None,
+            }
+            large_deck_data["cards"].append(card)
+
+        create_test_deck_file(input_path, large_deck_data)
+        create_test_template(template_dir)
+        asset_dir.mkdir(exist_ok=True)
+
+        # Act
+        result = runner.invoke(
+            app,
+            [
+                "render",
+                "--input",
+                str(input_path),
+                "--output",
+                str(output_path),
+                "--format",
+                "html",
+                "--template-dir",
+                str(template_dir),
+                "--asset-dir",
+                str(asset_dir),
+                "--verbose",
+            ],
+        )
+
+        # Assert
+        assert result.exit_code == 0
+        assert output_path.exists()
+
+        html_output = output_path.read_text(encoding="utf-8")
+        assert "Test Spell 1" in html_output
+        assert "Test Spell 50" in html_output
+        assert "Cards: 50" in html_output
+
+    def test_malformed_json(self, tmp_path):
+        """Test behavior with malformed JSON input."""
+        # Arrange
+        input_path = tmp_path / "malformed.json"
+
+        # Create malformed JSON
+        input_path.write_text('{"name": "Test", "cards": [', encoding="utf-8")
+
+        # Act
+        result = runner.invoke(app, ["validate", "--input", str(input_path)])
+
+        # Debug output
+        print("STDOUT:", repr(result.stdout))
+        print("STDERR:", repr(result.stderr))
+        print("OUTPUT:", repr(result.output))
+
+        # Assert
+        assert result.exit_code == 1
+        error_text = result.stdout + result.stderr + (result.output or "")
+        assert "Validation failed" in error_text or "failed" in error_text.lower()
+
+    def test_pdf_dependency_check(self):
+        """Test PDF dependency checking."""
+        from dmforge.application.services.weasy_renderer import WeasyRenderer
+
+        status = WeasyRenderer.check_pdf_dependencies()
+
+        assert isinstance(status, dict)
+        assert "weasyprint_installed" in status
+        assert "pydyf_installed" in status
+        assert "recommendations" in status
+
+        print("PDF Dependencies:", status)
+
+
+if __name__ == "__main__":
+    # Allow running individual tests
+    import sys
+
+    if len(sys.argv) > 1:
+        pytest.main([__file__ + "::" + sys.argv[1], "-v", "-s"])
+    else:
+        pytest.main([__file__, "-v", "-s"])
 ```

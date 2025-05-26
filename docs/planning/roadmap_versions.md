@@ -1,3 +1,5 @@
+## Version: 1.0 (2025-05-26)
+
 # Folder: docs/planning/roadmap_versions/
 
 # 🧭 Roadmap Version Snapshots

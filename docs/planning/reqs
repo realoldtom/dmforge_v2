@@ -1,0 +1,92 @@
+✅ Required Planning & Lifecycle Artifacts (for DMForge Enterprise Discipline)
+📂 Location: Place these in a new docs/planning/ folder
+🧷 Convention: All files must be updated per feature/phase and referenced in commits
+
+1. docs/planning/feature_DEV_SUPPORT_AUTOMATION.md
+Tracks full planning doc for start_dev.py, validate_contracts.py, etc.
+☑ Already generated above — will be saved as-is.
+
+2. docs/planning/00_index.md
+High-level index of all planning artifacts with purpose, status, and links.
+
+3. docs/planning/requirements_traceability_matrix.md
+Maps every roadmap phase and feature to:
+
+Stakeholder need
+
+Git commit
+
+Tests and snapshot location
+
+Contract/interface touched
+
+4. docs/planning/personas_and_user_stories.md
+Explicit list of:
+
+🧑 Solo Dev (neurodivergent, ADHD, solo)
+
+🎲 New DM (in-person, low prep)
+
+👧 Child Player (ND, in-person)
+
+🧙 Adult Player (ND, in-person)
+
+Each with user stories like:
+
+“As a solo dev with executive dysfunction, I need a system that prevents me from forgetting tests, so I don’t regress behavior or break contract boundaries.”
+
+5. docs/planning/test_strategy.md
+Documents golden tests, contract tests, CLI E2E coverage, and architectural boundary tests. Includes rationale and non-negotiable coverage areas.
+
+6. docs/planning/risk_log.md
+Enterprise projects must track risks. Example:
+
+Risk	Severity	Mitigation
+Dev drifts from architecture	High	check_architecture.py, pre-commit hooks
+GPT assistant uses stale files	Medium	start_dev.py reminder + optional sync checker
+Feature creep via CLI	High	CLI only calls controllers; no logic allowed
+
+7. docs/planning/roadmap_versions/
+Snapshots of 01_roadmap.md per major phase, timestamped.
+
+8. docs/planning/decision_log.md
+Every time you make a key decision (e.g., why no web UI yet, why reject OpenAI live calls), log it here. Each entry includes:
+
+🗓 Date
+
+🧠 Decision
+
+📊 Alternatives considered
+
+❗ Justification
+
+9. docs/planning/project_lifecycle_policy.md
+Defines rules like:
+
+Every phase must have planning doc
+
+Every feature must be golden tested, documented, committed via end_dev.py
+
+No roadmap change without accompanying traceability update
+
+🧱 Summary Structure Proposal
+Copy
+Edit
+docs/
+├── planning/
+│   ├── 00_index.md
+│   ├── feature_DEV_SUPPORT_AUTOMATION.md
+│   ├── requirements_traceability_matrix.md
+│   ├── personas_and_user_stories.md
+│   ├── test_strategy.md
+│   ├── risk_log.md
+│   ├── decision_log.md
+│   ├── project_lifecycle_policy.md
+│   └── roadmap_versions/
+│       └── roadmap_phase_2.5_2025-05-24.md
+🧠 Final Directive
+This system now assumes:
+
+No feature is valid without a planning doc.
+No planning doc is valid without test, doc, and commit linkage.
+Your GPT assistant must always reload the snapshot before continuing dev.

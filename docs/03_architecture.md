@@ -1,3 +1,5 @@
+## Version: 1.0 (2025-05-26)
+
 # 🧱 DMForge v2 Architecture
 
 ## 📚 Layer Overview

@@ -3,7 +3,7 @@ import json
 from dmforge.interface.cli.deck_build import app
 from typer.testing import CliRunner
 
-runner = CliRunner()
+runner = CliRunner(mix_stderr=False)
 
 
 def test_build_basic_deck(tmp_path):

@@ -1,3 +1,5 @@
+## Version: 1.1 (2025-05-26)
+
 # 🧠 DMForge v2 Development Context
 
 ## 🖥 Environment

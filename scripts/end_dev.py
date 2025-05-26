@@ -38,6 +38,11 @@ def main():
     run_check(["poetry", "run", "black", "."], "code formatting check")
     run_check(["poetry", "run", "ruff", "check", ".", "--fix"], "style linting")
     run_check(["poetry", "check"], "Poetry dependency integrity")
+    run_check(["python", "scripts/generate_cli_guide.py"], "generate CLI help")
+    run_check(["python", "scripts/validate_docs.py"], "[docs] Version headers validated")
+    run_check(["python", "scripts/check_templates.py"], "template presence check")
+    run_check(["python", "scripts/validate_templates.py"], "template syntax check")
+
     run_check(["poetry", "lock"], "Lock file update")
     run_check(["git", "add", "."], "git stage all")
     run_check(["git", "commit", "-m", msg], "git commit")

@@ -1,3 +1,5 @@
+## Version: 1.0 (2025-05-26)
+
 # 📜 DMForge v2 Contracts
 
 This document defines the **explicit interfaces** (contracts) between architecture layers in DMForge v2.  

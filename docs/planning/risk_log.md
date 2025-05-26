@@ -1,3 +1,5 @@
+## Version: 1.0 (2025-05-26)
+
 # File: docs/planning/risk_log.md
 
 # ⚠️ DMForge Risk Log (Role-Enforced)

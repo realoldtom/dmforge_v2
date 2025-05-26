@@ -1,3 +1,5 @@
+## Version: 1.0 (2025-05-26)
+
 # File: docs/planning/feature_DEV_SUPPORT_AUTOMATION.md
 
 # 🧭 Feature Planning: Developer Session Automation

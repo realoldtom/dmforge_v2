@@ -1,3 +1,5 @@
+## Version: 1.0 (2025-05-26)
+
 # File: docs/planning/requirements_traceability_matrix.md
 
 # 📊 Requirements Traceability Matrix

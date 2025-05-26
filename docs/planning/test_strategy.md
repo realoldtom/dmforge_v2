@@ -1,3 +1,5 @@
+## Version: 1.0 (2025-05-26)
+
 # File: docs/planning/test_strategy.md
 
 # 🧪 DMForge Test Strategy
